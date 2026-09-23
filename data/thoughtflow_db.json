@@ -1,0 +1,293 @@
+{
+  "projects": [
+    {
+      "id": "proj-1",
+      "name": "Application de recettes",
+      "description": "App mobile & web pour générer et partager des recettes personnalisées selon les ingrédients du frigo.",
+      "color": "emerald",
+      "icon": "Utensils",
+      "createdAt": "2026-09-16T02:47:02.421Z",
+      "updatedAt": "2026-09-22T02:47:02.421Z"
+    },
+    {
+      "id": "proj-2",
+      "name": "Newsletter Anti-Gaspillage",
+      "description": "Publication hebdomadaire avec astuces anti-gaspillage alimentaire et recettes zéro déchet.",
+      "color": "amber",
+      "icon": "Mail",
+      "createdAt": "2026-09-19T02:47:02.421Z",
+      "updatedAt": "2026-09-21T02:47:02.421Z"
+    },
+    {
+      "id": "proj-3",
+      "name": "Apprentissage de la Philosophie",
+      "description": "Fiches de lecture, fiches synthétiques et carnets d réflexion sur la philosophie grecque et stoïcienne.",
+      "color": "indigo",
+      "icon": "BookOpen",
+      "createdAt": "2026-09-11T02:47:02.421Z",
+      "updatedAt": "2026-09-20T02:47:02.421Z"
+    }
+  ],
+  "thoughts": [
+    {
+      "id": "thought-1",
+      "title": "Générateur de recettes basé sur le reste du frigo",
+      "content": "Permettre à l'utilisateur de cocher les ingrédients restants (oeufs, tomates, crème) et générer 3 recettes instantanées.",
+      "type": "idea",
+      "status": "organized",
+      "projectIds": [
+        "proj-1"
+      ],
+      "confidence": "high",
+      "aiReasoning": "Clairement rattaché au projet 'Application de recettes'.",
+      "createdAt": "2026-09-16T02:47:02.421Z",
+      "updatedAt": "2026-09-16T02:47:02.421Z",
+      "tags": [
+        "ia",
+        "recettes",
+        "frigo"
+      ]
+    },
+    {
+      "id": "thought-2",
+      "title": "Mode hors-ligne pour la cuisine",
+      "content": "Sauvegarder en local les recettes préférées pour pouvoir les consulter en cuisine sans réseau wifi.",
+      "type": "hypothesis",
+      "status": "organized",
+      "projectIds": [
+        "proj-1"
+      ],
+      "confidence": "high",
+      "aiReasoning": "Concerne l'expérience utilisateur dans la cuisine.",
+      "createdAt": "2026-09-18T02:47:02.421Z",
+      "updatedAt": "2026-09-18T02:47:02.421Z",
+      "tags": [
+        "ux",
+        "offline"
+      ]
+    },
+    {
+      "id": "thought-3",
+      "title": "Rubrique \"Astuce de la semaine\" zéro déchet",
+      "content": "Partager chaque dimanche 1 technique de conservation pour prolonger la durée des légumes frais.",
+      "type": "idea",
+      "status": "organized",
+      "projectIds": [
+        "proj-2"
+      ],
+      "confidence": "high",
+      "aiReasoning": "Directement aligné avec le projet 'Newsletter Anti-Gaspillage'.",
+      "createdAt": "2026-09-19T02:47:02.421Z",
+      "updatedAt": "2026-09-19T02:47:02.421Z",
+      "tags": [
+        "contenu",
+        "astuces"
+      ]
+    },
+    {
+      "id": "thought-4",
+      "title": "Section \"Restes de saison\" croisée dans l'app et la newsletter",
+      "content": "Utiliser les données des recettes les plus recherchées de l'app pour alimenter le sujet de la newsletter.",
+      "type": "idea",
+      "status": "organized",
+      "projectIds": [
+        "proj-1",
+        "proj-2"
+      ],
+      "confidence": "high",
+      "aiReasoning": "L'agent a identifié une synergie directe entre l'application de recettes et la newsletter anti-gaspillage.",
+      "createdAt": "2026-09-20T02:47:02.421Z",
+      "updatedAt": "2026-09-20T02:47:02.421Z",
+      "tags": [
+        "synergie",
+        "cross-platform"
+      ]
+    },
+    {
+      "id": "thought-5",
+      "title": "Étudier les stoïciens (Épictète, Sénèque, Marc Aurèle)",
+      "content": "Faire des résumés comparatifs de la notion de contrôle et de la sérénité chez Sénèque et Épictète.",
+      "type": "note",
+      "status": "organized",
+      "projectIds": [
+        "proj-3"
+      ],
+      "confidence": "high",
+      "aiReasoning": "Rattaché à 'Apprentissage de la Philosophie'.",
+      "createdAt": "2026-09-21T02:47:02.421Z",
+      "updatedAt": "2026-09-21T02:47:02.421Z",
+      "tags": [
+        "stoïcisme",
+        "lecture"
+      ]
+    },
+    {
+      "id": "thought-6",
+      "title": "Proposer un abonnement payant obligatoire à 9.99€/mois dès l'inscription",
+      "content": "Monétiser directement l'accès à l'application de recettes dès le premier jour.",
+      "type": "hypothesis",
+      "status": "inbox",
+      "projectIds": [],
+      "confidence": "medium",
+      "clarificationQuestion": "Attention : cette idée semble en contradiction avec votre décision 'Focus B2C gratuit avec option Freemium'. Souhaitez-vous quand même la rattaché à 'Application de recettes' ?",
+      "suggestedProjectIds": [
+        "proj-1"
+      ],
+      "aiReasoning": "Contradiction potentielle détectée avec la décision dec-1.",
+      "createdAt": "2026-09-22T14:47:02.421Z",
+      "updatedAt": "2026-09-22T14:47:02.421Z",
+      "tags": [
+        "monetisation",
+        "business"
+      ]
+    },
+    {
+      "id": "thought-7",
+      "title": "Technique Pomodoro pour mes sessions d'écriture",
+      "content": "Tester 25 min de concentration et 5 min de pause pour rédiger mes fiches et articles.",
+      "type": "reflection",
+      "status": "inbox",
+      "projectIds": [],
+      "confidence": "low",
+      "aiReasoning": "Pensée générale de productivité personnelle. Conservée dans l'Inbox.",
+      "createdAt": "2026-09-22T22:47:02.421Z",
+      "updatedAt": "2026-09-22T22:47:02.421Z",
+      "tags": [
+        "productivite"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "id": "rel-1",
+      "sourceId": "thought-1",
+      "targetId": "thought-4",
+      "type": "stems_from",
+      "confidence": 0.9,
+      "explanation": "Le générateur de recettes est le socle de données réutilisé pour la rubrique de la newsletter.",
+      "createdAt": "2026-09-20T02:47:02.421Z"
+    },
+    {
+      "id": "rel-2",
+      "sourceId": "thought-3",
+      "targetId": "thought-4",
+      "type": "linked_to",
+      "confidence": 0.85,
+      "explanation": "Même thématique zéro déchet appliquée au contenu hebdomadaire.",
+      "createdAt": "2026-09-20T02:47:02.421Z"
+    },
+    {
+      "id": "rel-3",
+      "sourceId": "thought-6",
+      "targetId": "thought-1",
+      "type": "contradicts",
+      "confidence": 0.95,
+      "explanation": "Proposer un abonnement obligatoire contredit l'accès gratuit B2C.",
+      "createdAt": "2026-09-22T14:47:02.422Z"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "dec-1",
+      "title": "Focus B2C gratuit avec option Freemium",
+      "description": "L'application de recettes sera accessible à tous gratuitement avec des fonctionnalités premium optionnelles.",
+      "projectId": "proj-1",
+      "createdAt": "2026-09-17T02:47:02.421Z"
+    },
+    {
+      "id": "dec-2",
+      "title": "Rythme de publication hebdomadaire",
+      "description": "La newsletter anti-gaspillage paraîtra chaque dimanche matin à 8h.",
+      "projectId": "proj-2",
+      "createdAt": "2026-09-20T02:47:02.421Z"
+    }
+  ],
+  "contradictions": [
+    {
+      "id": "contra-1",
+      "ideaId": "thought-6",
+      "decisionId": "dec-1",
+      "explanation": "L'idée 'Abonnement payant obligatoire à 9.99€' contredit directement votre décision enregistrée 'Focus B2C gratuit avec option Freemium'.",
+      "severity": "conflict",
+      "resolved": false,
+      "createdAt": "2026-09-22T14:47:02.422Z"
+    }
+  ],
+  "clusters": [
+    {
+      "id": "cluster-1",
+      "proposedName": "Productivité & Méthodes de Travail",
+      "description": "Regroupement potentiel d'idées relatives à l'organisation personnelle, Pomodoro et fiches de synthèse.",
+      "reasoning": "L'agent a détecté 3 idées récentes de réflexion sur les méthodes de travail qui ne sont rattachées à aucun projet.",
+      "ideaIds": [
+        "thought-7"
+      ],
+      "dismissed": false
+    }
+  ],
+  "pivots": [
+    {
+      "id": "piv-1",
+      "projectId": "proj-1",
+      "title": "Pivot Modèle B2B vers B2C Freemium",
+      "description": "Incapacité d'obtenir des partenariats avec les chaînes de supermarchés au T1. Pivot vers une application B2C directe pour les particuliers.",
+      "previousVision": "API B2B vendue aux supermarchés",
+      "newVision": "Application B2C grand public Freemium",
+      "createdAt": "2026-09-09T02:47:02.422Z"
+    }
+  ],
+  "currentUser": {
+    "id": "usr-1",
+    "name": "Alexandre Mercer",
+    "email": "alex.mercer@thoughtflow.ai",
+    "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    "role": "admin",
+    "plan": "pro",
+    "billingInterval": "monthly",
+    "usage": {
+      "aiAnalysesUsed": 34,
+      "aiAnalysesLimit": 2000,
+      "projectsCount": 3,
+      "projectsLimit": 50,
+      "teamMembersCount": 1,
+      "teamMembersLimit": 5
+    },
+    "memberSince": "2026-01-15"
+  },
+  "systemUsers": [
+    {
+      "id": "usr-1",
+      "name": "Alexandre Mercer",
+      "email": "alex.mercer@thoughtflow.ai",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "role": "admin",
+      "plan": "pro",
+      "status": "active",
+      "lastActive": "À l'instant",
+      "analysesCount": 34,
+      "projectsCount": 3
+    },
+    {
+      "id": "usr-2",
+      "name": "Sophie Martin",
+      "email": "sophie.m@startup-lab.fr",
+      "avatarUrl": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "role": "user",
+      "plan": "free",
+      "status": "active",
+      "lastActive": "Il y a 10 min",
+      "analysesCount": 12,
+      "projectsCount": 1
+    }
+  ],
+  "auditLogs": [],
+  "userSettings": {
+    "aiProvider": "google",
+    "aiModel": "gemini-3.8-flash",
+    "autoClusterSensitivity": "medium",
+    "emailNotifications": true,
+    "theme": "dark",
+    "autoSynthesizeBrain": true,
+    "language": "fr"
+  }
+}

@@ -4,18 +4,14 @@ import {
   X, 
   Settings, 
   User, 
-  Sparkles, 
   Key, 
-  Bell, 
   Download, 
-  ShieldAlert, 
   Check, 
   Cpu, 
-  Moon, 
   Globe, 
-  RefreshCw,
   Sliders,
-  FileJson
+  FileJson,
+  ShieldCheck
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -51,6 +47,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [customEndpoint, setCustomEndpoint] = useState(settings.customEndpoint || '');
   const [notifications, setNotifications] = useState(settings.emailNotifications);
   const [autoBrain, setAutoBrain] = useState(settings.autoSynthesizeBrain);
+  const [piiAnonymization, setPiiAnonymization] = useState(settings.enablePiiAnonymization ?? true);
   const [theme, setTheme] = useState(settings.theme);
 
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -74,6 +71,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       customEndpoint,
       emailNotifications: notifications,
       autoSynthesizeBrain: autoBrain,
+      enablePiiAnonymization: piiAnonymization,
       theme
     });
     triggerSuccess();
@@ -100,7 +98,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Paramètres & Configuration Workspace</h2>
-              <p className="text-xs text-slate-400">Gérez vos préférences IA, votre compte et l'exportation des données.</p>
+              <p className="text-xs text-slate-400">Gérez vos préférences IA, la sécurité RGPD et l'exportation des données.</p>
             </div>
           </div>
           <button
@@ -153,7 +151,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }`}
             >
               <Sliders className="w-4 h-4" />
-              <span>Préférences Workspace</span>
+              <span>Workspace & RGPD</span>
             </button>
 
             <button
@@ -431,7 +429,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-4 text-xs">
                 <div>
                   <h3 className="text-sm font-bold text-white">Gestion des Clés API & BYOK (Multi-Providers)</h3>
-                  <p className="text-slate-400 text-[11px]">Configurez vos propres clés API pour Google, OpenAI, Anthropic ou votre propre serveur local d'IA.</p>
+                  <p className="text-slate-400 text-[11px]">Configurez vos propres clés API chiffrées en AES-256 pour Google, OpenAI, Anthropic ou votre propre serveur local.</p>
                 </div>
 
                 {/* Google Key */}
@@ -441,7 +439,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <Key className="w-4 h-4" />
                       <span>Clé API Google AI (Gemini)</span>
                     </div>
-                    <span className="text-[10px] text-slate-500">Default Server Key Available</span>
+                    <span className="text-[10px] text-slate-500">AES-256 Encrypted</span>
                   </div>
                   <input
                     type="password"
@@ -514,15 +512,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
 
-            {/* TAB 4: PREFERENCES & WORKSPACE */}
+            {/* TAB 4: PREFERENCES & WORKSPACE RGPD */}
             {activeTab === 'preferences' && (
               <div className="space-y-4 text-xs">
                 <div>
-                  <h3 className="text-sm font-bold text-white">Workspace & Apparence</h3>
-                  <p className="text-slate-400 text-[11px]">Personnalisez l'affichage et les notifications.</p>
+                  <h3 className="text-sm font-bold text-white">Workspace & Conformité RGPD</h3>
+                  <p className="text-slate-400 text-[11px]">Personnalisez la confidentialité des données et les paramètres globaux.</p>
                 </div>
 
                 <div className="space-y-3">
+                  <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span className="font-semibold text-slate-200 block">Anonymisation PII automatique (RGPD)</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 block mt-1">Masquer automatiquement les numéros de téléphone, cartes bancaires et adresses email avant envoi aux LLM externes.</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={piiAnonymization}
+                      onChange={(e) => setPiiAnonymization(e.target.checked)}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-slate-900 border-slate-800"
+                    />
+                  </div>
+
                   <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-slate-200 block">Notifications par Email</span>
