@@ -5,6 +5,8 @@ import { encryptApiKey, maskApiKey, rateLimiter } from './security.js';
 import { getGeminiClient } from './aiService.js';
 import { authMiddleware, generateToken, AuthenticatedRequest } from './auth.js';
 import { validateRequiredFields } from './middleware/validation.js';
+import { registerSSEClient, broadcastSSEEvent } from './events.js';
+import { selectRelevantThoughts } from './embeddingService.js';
 import {
   Project,
   Thought,
@@ -21,6 +23,12 @@ export const apiRouter = Router();
 // Apply rate limiter and auth middleware to API routes
 apiRouter.use(rateLimiter(120, 60 * 1000));
 apiRouter.use(authMiddleware);
+
+// Server-Sent Events (SSE) stream for real-time collaboration updates
+apiRouter.get('/events', (req: Request, res: Response) => {
+  const clientId = `client-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+  registerSSEClient(clientId, res);
+});
 
 // Auth Token Endpoint
 apiRouter.post('/auth/login', validateRequiredFields(['email']), (req: Request, res: Response) => {
@@ -90,6 +98,7 @@ apiRouter.post('/user/delete-account', (req: AuthenticatedRequest, res: Response
   });
 
   store.save();
+  broadcastSSEEvent('ACCOUNT_PURGED', { userEmail });
   res.json({ success: true, message: 'Toutes les données ont été définitivement supprimées conformément au RGPD.' });
 });
 
@@ -290,12 +299,15 @@ Renvoie JSON :
   }
 });
 
-// Capture & Analyze Thought
+// Capture & Analyze Thought with Cosine Similarity Context Filtering
 apiRouter.post('/thoughts', validateRequiredFields(['content']), async (req: Request, res: Response) => {
   try {
     const { content } = req.body;
     const db = store.get();
     db.currentUser.usage.aiAnalysesUsed++;
+
+    // Select top 3 relevant thoughts using Cosine Similarity instead of sending full history
+    const topRelevantThoughts = selectRelevantThoughts(content, db.thoughts, 3);
 
     const ai = getGeminiClient();
     let analysisResult = null;
@@ -306,7 +318,7 @@ apiRouter.post('/thoughts', validateRequiredFields(['content']), async (req: Req
           newThoughtContent: content.trim(),
           existingProjects: db.projects.map(p => ({ id: p.id, name: p.name, description: p.description })),
           existingDecisions: db.decisions.map(d => ({ id: d.id, title: d.title, description: d.description, projectId: d.projectId })),
-          recentThoughts: db.thoughts.slice(0, 15).map(t => ({ id: t.id, title: t.title, content: t.content, projectIds: t.projectIds })),
+          topRelevantThoughts: topRelevantThoughts.map(t => ({ id: t.id, title: t.title, content: t.content, projectIds: t.projectIds })),
         };
 
         const systemInstruction = `
@@ -461,6 +473,7 @@ Mission :
     }
 
     store.save();
+    broadcastSSEEvent('THOUGHT_CREATED', newThought);
 
     res.status(201).json({
       thought: newThought,
@@ -495,6 +508,7 @@ apiRouter.post('/thoughts/placement', validateRequiredFields(['thoughtId']), (re
   thought.updatedAt = new Date().toISOString();
 
   store.save();
+  broadcastSSEEvent('THOUGHT_UPDATED', thought);
   res.json({ thought, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
@@ -516,6 +530,7 @@ apiRouter.post('/thoughts/update', validateRequiredFields(['thoughtId']), (req: 
   thought.updatedAt = new Date().toISOString();
 
   store.save();
+  broadcastSSEEvent('THOUGHT_UPDATED', thought);
   res.json({ thought, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
@@ -528,6 +543,7 @@ apiRouter.post('/thoughts/delete', validateRequiredFields(['thoughtId']), (req: 
   db.contradictions = db.contradictions.filter(c => c.ideaId !== thoughtId && c.otherIdeaId !== thoughtId);
 
   store.save();
+  broadcastSSEEvent('THOUGHT_DELETED', { thoughtId });
   res.json({ success: true, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
@@ -547,6 +563,7 @@ apiRouter.post('/projects', validateRequiredFields(['name']), (req: Request, res
 
   db.projects.push(newProject);
   store.save();
+  broadcastSSEEvent('PROJECT_CREATED', newProject);
 
   res.status(201).json({ project: newProject, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
@@ -567,6 +584,7 @@ apiRouter.post('/projects/update', validateRequiredFields(['projectId']), (req: 
   project.updatedAt = new Date().toISOString();
 
   store.save();
+  broadcastSSEEvent('PROJECT_UPDATED', project);
   res.json({ project, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
@@ -587,6 +605,7 @@ apiRouter.post('/projects/delete', validateRequiredFields(['projectId']), (req: 
   });
 
   store.save();
+  broadcastSSEEvent('PROJECT_DELETED', { projectId });
   res.json({ success: true, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
