@@ -1,0 +1,6 @@
+{
+  "name": "ThoughtFlow AI",
+  "description": "Agent intelligent de capture, d'organisation et de connexion d'idées piloté par l'IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
