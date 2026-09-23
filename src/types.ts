@@ -261,6 +261,7 @@ export interface AppSettings {
   theme: 'dark' | 'light' | 'system';
   autoSynthesizeBrain: boolean;
   language: 'fr' | 'en';
+  enablePiiAnonymization?: boolean;
 }
 
 export interface PricingTier {

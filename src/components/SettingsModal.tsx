@@ -4,18 +4,16 @@ import {
   X, 
   Settings, 
   User, 
-  Sparkles, 
   Key, 
-  Bell, 
   Download, 
-  ShieldAlert, 
   Check, 
   Cpu, 
-  Moon, 
   Globe, 
-  RefreshCw,
   Sliders,
-  FileJson
+  FileJson,
+  ShieldCheck,
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -51,9 +49,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [customEndpoint, setCustomEndpoint] = useState(settings.customEndpoint || '');
   const [notifications, setNotifications] = useState(settings.emailNotifications);
   const [autoBrain, setAutoBrain] = useState(settings.autoSynthesizeBrain);
+  const [piiAnonymization, setPiiAnonymization] = useState(settings.enablePiiAnonymization ?? true);
   const [theme, setTheme] = useState(settings.theme);
 
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [showPurgeConfirm, setShowPurgeConfirm] = useState(false);
+  const [purgeSuccess, setPurgeSuccess] = useState(false);
 
   if (!isOpen) return null;
 
@@ -74,9 +75,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       customEndpoint,
       emailNotifications: notifications,
       autoSynthesizeBrain: autoBrain,
+      enablePiiAnonymization: piiAnonymization,
       theme
     });
     triggerSuccess();
+  };
+
+  const handleAccountPurge = async () => {
+    try {
+      const res = await fetch('/api/user/delete-account', { method: 'POST' });
+      if (res.ok) {
+        setPurgeSuccess(true);
+        setShowPurgeConfirm(false);
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+      }
+    } catch (e) {
+      console.error("Failed to purge account:", e);
+    }
   };
 
   const triggerSuccess = () => {
@@ -100,7 +117,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
             <div>
               <h2 className="text-lg font-bold text-white">Paramètres & Configuration Workspace</h2>
-              <p className="text-xs text-slate-400">Gérez vos préférences IA, votre compte et l'exportation des données.</p>
+              <p className="text-xs text-slate-400">Gérez vos préférences IA, la sécurité RGPD et l'exportation des données.</p>
             </div>
           </div>
           <button
@@ -153,7 +170,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               }`}
             >
               <Sliders className="w-4 h-4" />
-              <span>Préférences Workspace</span>
+              <span>Workspace & RGPD</span>
             </button>
 
             <button
@@ -174,6 +191,13 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="p-3 bg-emerald-950/60 border border-emerald-500/40 text-emerald-300 rounded-xl text-xs flex items-center gap-2 animate-in fade-in">
                 <Check className="w-4 h-4" />
                 <span>Modifications enregistrées avec succès !</span>
+              </div>
+            )}
+
+            {purgeSuccess && (
+              <div className="p-3 bg-rose-950/60 border border-rose-500/40 text-rose-300 rounded-xl text-xs flex items-center gap-2 animate-in fade-in">
+                <Check className="w-4 h-4" />
+                <span>Données supprimées avec succès. Rechargement de l'application...</span>
               </div>
             )}
 
@@ -431,7 +455,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <div className="space-y-4 text-xs">
                 <div>
                   <h3 className="text-sm font-bold text-white">Gestion des Clés API & BYOK (Multi-Providers)</h3>
-                  <p className="text-slate-400 text-[11px]">Configurez vos propres clés API pour Google, OpenAI, Anthropic ou votre propre serveur local d'IA.</p>
+                  <p className="text-slate-400 text-[11px]">Configurez vos propres clés API chiffrées en AES-256 pour Google, OpenAI, Anthropic ou votre propre serveur local.</p>
                 </div>
 
                 {/* Google Key */}
@@ -441,7 +465,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <Key className="w-4 h-4" />
                       <span>Clé API Google AI (Gemini)</span>
                     </div>
-                    <span className="text-[10px] text-slate-500">Default Server Key Available</span>
+                    <span className="text-[10px] text-slate-500">AES-256 Encrypted</span>
                   </div>
                   <input
                     type="password"
@@ -514,15 +538,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             )}
 
-            {/* TAB 4: PREFERENCES & WORKSPACE */}
+            {/* TAB 4: PREFERENCES & WORKSPACE RGPD */}
             {activeTab === 'preferences' && (
               <div className="space-y-4 text-xs">
                 <div>
-                  <h3 className="text-sm font-bold text-white">Workspace & Apparence</h3>
-                  <p className="text-slate-400 text-[11px]">Personnalisez l'affichage et les notifications.</p>
+                  <h3 className="text-sm font-bold text-white">Workspace & Conformité RGPD</h3>
+                  <p className="text-slate-400 text-[11px]">Personnalisez la confidentialité des données et les paramètres globaux.</p>
                 </div>
 
                 <div className="space-y-3">
+                  <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                        <span className="font-semibold text-slate-200 block">Anonymisation PII automatique (RGPD)</span>
+                      </div>
+                      <span className="text-[11px] text-slate-400 block mt-1">Masquer automatiquement les numéros de téléphone, cartes bancaires et adresses email avant envoi aux LLM externes.</span>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={piiAnonymization}
+                      onChange={(e) => setPiiAnonymization(e.target.checked)}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-slate-900 border-slate-800"
+                    />
+                  </div>
+
                   <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
                     <div>
                       <span className="font-semibold text-slate-200 block">Notifications par Email</span>
@@ -536,20 +576,54 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     />
                   </div>
 
-                  <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-slate-200 block">Thème de l'interface</span>
-                      <span className="text-[11px] text-slate-400 block">Sélectionnez le mode visuel.</span>
+                  {/* RGPD Right to be Forgotten Section */}
+                  <div className="p-4 bg-rose-950/20 border border-rose-500/30 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 text-rose-400 font-semibold">
+                        <Trash2 className="w-4 h-4" />
+                        <span>Droit à l'Oubli RGPD (Article 17)</span>
+                      </div>
                     </div>
-                    <select
-                      value={theme}
-                      onChange={(e) => setTheme(e.target.value as any)}
-                      className="bg-slate-900 border border-slate-800 text-slate-200 rounded-lg px-2.5 py-1"
-                    >
-                      <option value="dark">Sombre (Deep Dark)</option>
-                      <option value="light">Clair (Soft Slate)</option>
-                      <option value="system">Système</option>
-                    </select>
+                    <p className="text-[11px] text-slate-300">
+                      Purgez immédiatement et définitivement l'intégralité de vos pensées, projets, décisions et graphes de données de nos serveurs.
+                    </p>
+
+                    {!showPurgeConfirm ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowPurgeConfirm(true)}
+                        className="px-3 py-1.5 bg-rose-900/60 hover:bg-rose-800 text-rose-200 text-xs font-semibold rounded-xl border border-rose-500/40 transition-all flex items-center gap-1.5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Demander la purge définitive des données</span>
+                      </button>
+                    ) : (
+                      <div className="p-3 bg-rose-950 border border-rose-500/50 rounded-xl space-y-2">
+                        <p className="text-[11px] font-bold text-rose-300 flex items-center gap-1.5">
+                          <AlertTriangle className="w-4 h-4 text-rose-400" />
+                          <span>Confirmer la suppression irréversible ?</span>
+                        </p>
+                        <p className="text-[10px] text-slate-300">
+                          Cette action effacera immédiatement l'ensemble de votre base de données et ne pourra pas être annulée.
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={handleAccountPurge}
+                            className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-lg transition-colors"
+                          >
+                            Oui, Tout Supprimer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowPurgeConfirm(false)}
+                            className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium text-xs rounded-lg transition-colors"
+                          >
+                            Annuler
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
