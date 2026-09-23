@@ -4,6 +4,7 @@ import { store } from './store.js';
 import { encryptApiKey, maskApiKey, rateLimiter } from './security.js';
 import { getGeminiClient } from './aiService.js';
 import { authMiddleware, generateToken, AuthenticatedRequest } from './auth.js';
+import { validateRequiredFields } from './middleware/validation.js';
 import {
   Project,
   Thought,
@@ -13,7 +14,7 @@ import {
   AdminAuditLog,
   AdminSystemMetrics,
   UserRole
-} from '../types.js';
+} from '../../types.js';
 
 export const apiRouter = Router();
 
@@ -22,7 +23,7 @@ apiRouter.use(rateLimiter(120, 60 * 1000));
 apiRouter.use(authMiddleware);
 
 // Auth Token Endpoint
-apiRouter.post('/auth/login', (req: Request, res: Response) => {
+apiRouter.post('/auth/login', validateRequiredFields(['email']), (req: Request, res: Response) => {
   const { email } = req.body;
   const db = store.get();
   const user = db.systemUsers.find(u => u.email === email) || db.systemUsers[0];
@@ -65,9 +66,9 @@ apiRouter.get('/data', (req: AuthenticatedRequest, res: Response) => {
 });
 
 // Subscription Upgrade Endpoint
-apiRouter.post('/subscription/upgrade', (req: Request, res: Response) => {
+apiRouter.post('/subscription/upgrade', validateRequiredFields(['plan']), (req: Request, res: Response) => {
   const { plan, interval } = req.body;
-  if (!plan || !['free', 'pro', 'team'].includes(plan)) {
+  if (!['free', 'pro', 'team'].includes(plan)) {
     return res.status(400).json({ error: 'Plan invalide' });
   }
 
@@ -167,7 +168,7 @@ apiRouter.get('/export', (req: Request, res: Response) => {
 });
 
 // Project Brain Synthesis
-apiRouter.post('/projects/brain', async (req: Request, res: Response) => {
+apiRouter.post('/projects/brain', validateRequiredFields(['projectId']), async (req: Request, res: Response) => {
   try {
     const { projectId } = req.body;
     const db = store.get();
@@ -262,13 +263,9 @@ Renvoie JSON :
 });
 
 // Capture & Analyze Thought
-apiRouter.post('/thoughts', async (req: Request, res: Response) => {
+apiRouter.post('/thoughts', validateRequiredFields(['content']), async (req: Request, res: Response) => {
   try {
     const { content } = req.body;
-    if (!content || typeof content !== 'string' || !content.trim()) {
-      return res.status(400).json({ error: 'Le contenu est requis.' });
-    }
-
     const db = store.get();
     db.currentUser.usage.aiAnalysesUsed++;
 
@@ -455,7 +452,7 @@ Mission :
 });
 
 // Update Thought Placement
-apiRouter.post('/thoughts/placement', (req: Request, res: Response) => {
+apiRouter.post('/thoughts/placement', validateRequiredFields(['thoughtId']), (req: Request, res: Response) => {
   const { thoughtId, projectIds, status } = req.body;
   const db = store.get();
   const thought = db.thoughts.find(t => t.id === thoughtId);
@@ -474,7 +471,7 @@ apiRouter.post('/thoughts/placement', (req: Request, res: Response) => {
 });
 
 // Update Thought Details
-apiRouter.post('/thoughts/update', (req: Request, res: Response) => {
+apiRouter.post('/thoughts/update', validateRequiredFields(['thoughtId']), (req: Request, res: Response) => {
   const { thoughtId, title, content, type, status, projectIds } = req.body;
   const db = store.get();
   const thought = db.thoughts.find(t => t.id === thoughtId);
@@ -495,7 +492,7 @@ apiRouter.post('/thoughts/update', (req: Request, res: Response) => {
 });
 
 // Delete Thought
-apiRouter.post('/thoughts/delete', (req: Request, res: Response) => {
+apiRouter.post('/thoughts/delete', validateRequiredFields(['thoughtId']), (req: Request, res: Response) => {
   const { thoughtId } = req.body;
   const db = store.get();
   db.thoughts = db.thoughts.filter(t => t.id !== thoughtId);
@@ -507,12 +504,8 @@ apiRouter.post('/thoughts/delete', (req: Request, res: Response) => {
 });
 
 // Project CRUD
-apiRouter.post('/projects', (req: Request, res: Response) => {
+apiRouter.post('/projects', validateRequiredFields(['name']), (req: Request, res: Response) => {
   const { name, description, color, icon } = req.body;
-  if (!name || !name.trim()) {
-    return res.status(400).json({ error: 'Le nom du projet est requis' });
-  }
-
   const db = store.get();
   const newProject: Project = {
     id: `proj-${Date.now()}`,
@@ -530,7 +523,7 @@ apiRouter.post('/projects', (req: Request, res: Response) => {
   res.status(201).json({ project: newProject, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
-apiRouter.post('/projects/update', (req: Request, res: Response) => {
+apiRouter.post('/projects/update', validateRequiredFields(['projectId']), (req: Request, res: Response) => {
   const { projectId, name, description, color, icon } = req.body;
   const db = store.get();
   const project = db.projects.find(p => p.id === projectId);
@@ -549,10 +542,14 @@ apiRouter.post('/projects/update', (req: Request, res: Response) => {
   res.json({ project, data: { projects: db.projects, thoughts: db.thoughts, relations: db.relations, decisions: db.decisions, contradictions: db.contradictions, clusters: db.clusters } });
 });
 
-apiRouter.post('/projects/delete', (req: Request, res: Response) => {
+apiRouter.post('/projects/delete', validateRequiredFields(['projectId']), (req: Request, res: Response) => {
   const { projectId } = req.body;
   const db = store.get();
   db.projects = db.projects.filter(p => p.id !== projectId);
+
+  // Cascade clean decisions and pivots
+  db.decisions = db.decisions.filter(d => d.projectId !== projectId);
+  db.pivots = db.pivots.filter(p => p.projectId !== projectId);
 
   db.thoughts.forEach(t => {
     t.projectIds = t.projectIds.filter(id => id !== projectId);
@@ -566,12 +563,8 @@ apiRouter.post('/projects/delete', (req: Request, res: Response) => {
 });
 
 // Decisions CRUD
-apiRouter.post('/decisions', (req: Request, res: Response) => {
+apiRouter.post('/decisions', validateRequiredFields(['title']), (req: Request, res: Response) => {
   const { title, description, projectId, associatedIdeaId } = req.body;
-  if (!title || !title.trim()) {
-    return res.status(400).json({ error: 'Titre requis' });
-  }
-
   const db = store.get();
   const newDecision: Decision = {
     id: `dec-${Date.now()}`,
@@ -589,7 +582,7 @@ apiRouter.post('/decisions', (req: Request, res: Response) => {
 });
 
 // Contradiction Resolution & AI Arbitration
-apiRouter.post('/contradictions/resolve', (req: Request, res: Response) => {
+apiRouter.post('/contradictions/resolve', validateRequiredFields(['contradictionId']), (req: Request, res: Response) => {
   const { contradictionId } = req.body;
   const db = store.get();
   const contra = db.contradictions.find(c => c.id === contradictionId);
