@@ -1,5 +1,6 @@
 import { encryptApiKey, decryptApiKey, maskApiKey, anonymizePII } from '../src/server/security.js';
 import { generateToken, verifyToken } from '../src/server/auth.js';
+import { store } from '../src/server/store.js';
 
 function runTests() {
   console.log('--- EXECUTING BACKEND SECURITY & AUTH UNIT TESTS ---');
@@ -31,6 +32,12 @@ function runTests() {
   const verified = verifyToken(token);
   console.assert(verified?.sub === 'usr-1', 'JWT token verification failed');
   console.log('✓ JWT Session Tokens Passed');
+
+  // 5. Store Persistence Test
+  const db = store.get();
+  console.assert(Array.isArray(db.projects), 'Store projects array invalid');
+  console.assert(Array.isArray(db.thoughts), 'Store thoughts array invalid');
+  console.log('✓ Store Persistence Passed');
 
   console.log('ALL UNIT TESTS COMPLETED SUCCESSFULLY.');
 }

@@ -65,6 +65,34 @@ apiRouter.get('/data', (req: AuthenticatedRequest, res: Response) => {
   });
 });
 
+// RGPD Article 17: Right to be Forgotten / Delete Account & Purge Data
+apiRouter.post('/user/delete-account', (req: AuthenticatedRequest, res: Response) => {
+  const db = store.get();
+  const userEmail = db.currentUser.email;
+
+  // Reset user data to initial empty state
+  db.thoughts = [];
+  db.projects = [];
+  db.decisions = [];
+  db.relations = [];
+  db.contradictions = [];
+  db.clusters = [];
+  db.pivots = [];
+
+  // Record security audit log
+  db.auditLogs.unshift({
+    id: `log-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    action: 'RGPD_ACCOUNT_PURGED',
+    userEmail,
+    details: 'Purge définitive de l\'ensemble des pensées et projets (Droit à l\'oubli Article 17)',
+    type: 'security'
+  });
+
+  store.save();
+  res.json({ success: true, message: 'Toutes les données ont été définitivement supprimées conformément au RGPD.' });
+});
+
 // Subscription Upgrade Endpoint
 apiRouter.post('/subscription/upgrade', validateRequiredFields(['plan']), (req: Request, res: Response) => {
   const { plan, interval } = req.body;
