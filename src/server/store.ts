@@ -1,5 +1,3 @@
-import fs from 'fs';
-import path from 'path';
 import {
   INITIAL_PROJECTS,
   INITIAL_THOUGHTS,
@@ -21,9 +19,7 @@ import {
   SystemUser,
   AdminAuditLog
 } from '../types.js';
-
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'thoughtflow_db.json');
+import { IDatabaseAdapter, JSONFileAdapter } from './dbAdapter.js';
 
 export interface AppDatabase {
   projects: Project[];
@@ -108,67 +104,46 @@ const defaultSettings: AppSettings = {
 };
 
 class Store {
+  private adapter: IDatabaseAdapter;
   private db: AppDatabase;
 
-  constructor() {
-    this.db = this.loadFromDisk();
+  constructor(adapter?: IDatabaseAdapter) {
+    this.adapter = adapter || new JSONFileAdapter();
+    this.db = this.initStore();
   }
 
-  private loadFromDisk(): AppDatabase {
+  private initStore(): AppDatabase {
     try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-
-      if (fs.existsSync(DB_FILE)) {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
-        return {
-          projects: parsed.projects || [...INITIAL_PROJECTS],
-          thoughts: parsed.thoughts || [...INITIAL_THOUGHTS],
-          relations: parsed.relations || [...INITIAL_RELATIONS],
-          decisions: parsed.decisions || [...INITIAL_DECISIONS],
-          contradictions: parsed.contradictions || [...INITIAL_CONTRADICTIONS],
-          clusters: parsed.clusters || [...INITIAL_CLUSTERS],
-          pivots: parsed.pivots || defaultPivots,
-          currentUser: parsed.currentUser || defaultUser,
-          systemUsers: parsed.systemUsers || defaultSystemUsers,
-          auditLogs: parsed.auditLogs || [],
-          userSettings: parsed.userSettings || defaultSettings
-        };
-      }
+      const loaded = this.adapter.load();
+      return {
+        projects: loaded.projects || [...INITIAL_PROJECTS],
+        thoughts: loaded.thoughts || [...INITIAL_THOUGHTS],
+        relations: loaded.relations || [...INITIAL_RELATIONS],
+        decisions: loaded.decisions || [...INITIAL_DECISIONS],
+        contradictions: loaded.contradictions || [...INITIAL_CONTRADICTIONS],
+        clusters: loaded.clusters || [...INITIAL_CLUSTERS],
+        pivots: loaded.pivots || defaultPivots,
+        currentUser: loaded.currentUser || defaultUser,
+        systemUsers: loaded.systemUsers || defaultSystemUsers,
+        auditLogs: loaded.auditLogs || [],
+        userSettings: loaded.userSettings || defaultSettings
+      };
     } catch (err) {
-      console.error("Failed to load DB from disk, initializing default store:", err);
-    }
-
-    const initialDb: AppDatabase = {
-      projects: [...INITIAL_PROJECTS],
-      thoughts: [...INITIAL_THOUGHTS],
-      relations: [...INITIAL_RELATIONS],
-      decisions: [...INITIAL_DECISIONS],
-      contradictions: [...INITIAL_CONTRADICTIONS],
-      clusters: [...INITIAL_CLUSTERS],
-      pivots: defaultPivots,
-      currentUser: defaultUser,
-      systemUsers: defaultSystemUsers,
-      auditLogs: [],
-      userSettings: defaultSettings
-    };
-
-    this.saveToDisk(initialDb);
-    return initialDb;
-  }
-
-  private saveToDisk(data: AppDatabase) {
-    try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-      const tempFile = `${DB_FILE}.tmp`;
-      fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf-8');
-      fs.renameSync(tempFile, DB_FILE);
-    } catch (err) {
-      console.error("Failed to save DB to disk:", err);
+      const initialDb: AppDatabase = {
+        projects: [...INITIAL_PROJECTS],
+        thoughts: [...INITIAL_THOUGHTS],
+        relations: [...INITIAL_RELATIONS],
+        decisions: [...INITIAL_DECISIONS],
+        contradictions: [...INITIAL_CONTRADICTIONS],
+        clusters: [...INITIAL_CLUSTERS],
+        pivots: defaultPivots,
+        currentUser: defaultUser,
+        systemUsers: defaultSystemUsers,
+        auditLogs: [],
+        userSettings: defaultSettings
+      };
+      this.adapter.save(initialDb);
+      return initialDb;
     }
   }
 
@@ -177,7 +152,7 @@ class Store {
   }
 
   public save() {
-    this.saveToDisk(this.db);
+    this.adapter.save(this.db);
   }
 }
 
